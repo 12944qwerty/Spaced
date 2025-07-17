@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		9395DBEB2E26DE8C0016A543 /* PublishedObject in Frameworks */ = {isa = PBXBuildFile; productRef = 9395DBEA2E26DE8C0016A543 /* PublishedObject */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		9395DBC52E2582910016A543 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9395DBEB2E26DE8C0016A543 /* PublishedObject in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +117,7 @@
 			);
 			name = Spaced;
 			packageProductDependencies = (
+				9395DBEA2E26DE8C0016A543 /* PublishedObject */,
 			);
 			productName = Spaced;
 			productReference = 9395DBB72E25828E0016A543 /* Spaced.app */;
@@ -195,6 +201,9 @@
 			);
 			mainGroup = 9395DBAE2E25828E0016A543;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				9395DBE92E26DE8C0016A543 /* XCRemoteSwiftPackageReference "PublishedObject" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9395DBB82E25828E0016A543 /* Products */;
 			projectDirPath = "";
@@ -558,6 +567,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9395DBE92E26DE8C0016A543 /* XCRemoteSwiftPackageReference "PublishedObject" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Amzd/PublishedObject";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.3.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9395DBEA2E26DE8C0016A543 /* PublishedObject */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9395DBE92E26DE8C0016A543 /* XCRemoteSwiftPackageReference "PublishedObject" */;
+			productName = PublishedObject;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9395DBAF2E25828E0016A543 /* Project object */;
 }

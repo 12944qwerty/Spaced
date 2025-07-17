@@ -1,0 +1,15 @@
+{
+  "originHash" : "8c9c9b363ecd47f5a32fffb08ed63a2e008574a5d297b60a1663fad9d5cdf162",
+  "pins" : [
+    {
+      "identity" : "publishedobject",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Amzd/PublishedObject",
+      "state" : {
+        "revision" : "e1e08d71008f3cb116e4ed1d3050d978c7bf1938",
+        "version" : "0.3.0"
+      }
+    }
+  ],
+  "version" : 3
+}
