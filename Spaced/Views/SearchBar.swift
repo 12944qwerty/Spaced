@@ -8,9 +8,7 @@
 import SwiftUI
 
 struct SearchBar: View {
-    @StateObject var manager = TabManager.shared
-    
-    @ObservedObject var tab: TabState
+    @ObservedObject var tab: Tab
     
     @State var searchFocusedState = false
     @State var urlEdit = ""
@@ -23,7 +21,6 @@ struct SearchBar: View {
             if searchFocusedState {
                 HStack {
                     TextField("Search or type URL", text: $urlEdit)
-                        
                         .keyboardType(.webSearch)
                         .focused($searchFocused)
                         .autocorrectionDisabled()
@@ -125,7 +122,7 @@ struct SearchBar: View {
         .padding(.top, UIApplication.shared.safeAreaTopInset)
         .padding(.bottom, 10)
         .padding(.horizontal)
-        .background(Color(UIColor.tertiarySystemFill))
+        .background(.ultraThinMaterial)
         .overlay(Divider(), alignment: .bottom)
     }
 }
@@ -133,7 +130,7 @@ struct SearchBar: View {
 #Preview {
     VStack {
         SearchBar(
-            tab: TabState.fake,
+            tab: Tab.fake,
             searchFocusedState: false
         )
         Spacer()

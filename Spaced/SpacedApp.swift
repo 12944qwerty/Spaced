@@ -11,7 +11,7 @@ import SwiftUI
 struct SpacedApp: App {
     var body: some Scene {
         WindowGroup {
-            TabGrid()
+            ContentView()
         }
     }
 }
