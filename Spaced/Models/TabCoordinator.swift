@@ -9,54 +9,39 @@ import SwiftUI
 
 @Observable
 class TabCoordinator {
-    var tabs: [Tab] = [Tab(initialURL: URL(string: "https://google.com")!)]
+    var tabs: [Tab] = []
+    
+    var path = NavigationPath()
     
     var selectedTab: Tab?
-    
-    var animateView = false
-    var showDetailView = false
+    var prevTab: Tab?
     
     var detailScrollPosition: String?
     
-    func didDetailPageChanged() {
-        if let updatedTab = tabs.first(where: { $0.id == detailScrollPosition }) {
-            selectedTab = updatedTab
-        }
-    }
-    
-    func toggleView(show: Bool) {
-        if show {
-            detailScrollPosition = selectedTab?.id
-            withAnimation(.spring(duration: 0.4), completionCriteria: .removed) {
-                animateView = true
-            } completion: {
-                self.showDetailView = true
-            }
-        } else {
-            showDetailView = false
-            withAnimation(.spring(duration: 0.4), completionCriteria: .removed) {
-                animateView = false
-            } completion: {
-                self.resetAnimationProperties()
-            }
-        }
-    }
-    
-    func resetAnimationProperties() {
-        selectedTab = nil
-        detailScrollPosition = nil
-    }
-    
     func close(tab: Tab) {
-        
+        tabs.removeAll(where: { $0.id == tab.id })
     }
     
-    func addTab() {
+    func addTab() -> Tab {
         let tab = Tab(initialURL: URL(string: "https://google.com")!)
         
         detailScrollPosition = tab.id
         
         tabs.append(tab)
+        
+        return tab
+    }
+    
+    func addDefaultTab() {
+        if tabs.count == 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                let tab = self.addTab()
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    self.path.append(tab)
+                }
+            }
+        }
     }
 }
 

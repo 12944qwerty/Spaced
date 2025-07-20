@@ -8,39 +8,27 @@
 import SwiftUI
 
 struct ContentView: View {
-    var coordinator: TabCoordinator = .init()
+    @State var coordinator: TabCoordinator = .init()
+    
+    @State var previousPath = NavigationPath()
+    
+    @Namespace var tabTransition
     
     var body: some View {
-        NavigationStack {
-            TabGrid()
+        NavigationStack(path: $coordinator.path) {
+            TabGrid(namespace: tabTransition)
                 .environment(coordinator)
-                .allowsHitTesting(coordinator.selectedTab == nil)
+                .navigationDestination(for: Tab.self) { tab in
+                    Detail(tab: tab)
+                        .environment(coordinator)
+                        .navigationBarBackButtonHidden(true)
+                        .navigationTransition(.zoom(sourceID: tab.id, in: tabTransition))
+                        .navigationAllowDismissalGestures(.none)
+                }
         }
-        .overlay {
-            Rectangle()
-                .fill(.background)
-                .ignoresSafeArea()
-                .opacity(coordinator.animateView ? 1 : 0)
-        }
-        .overlay {
-            if coordinator.selectedTab != nil {
-                Detail()
-                    .environment(coordinator)
-                    .allowsHitTesting(coordinator.showDetailView)
-            }
-        }
-        .overlayPreferenceValue(HeroKey.self) { value in
-            if let selectedTab = coordinator.selectedTab,
-               let sAnchor = value[selectedTab.id + "SOURCE"],
-               let dAnchor = value[selectedTab.id + "DEST"] {
-                HeroLayer(
-                    tab: selectedTab,
-                    sAnchor: sAnchor,
-                    dAnchor: dAnchor
-                )
-                    .environment(coordinator)
-            }
-        }
+        .preferredColorScheme(.dark)
+        .onChange(of: coordinator.tabs, perform: { _ in coordinator.addDefaultTab() })
+        .onAppear(perform: coordinator.addDefaultTab)
     }
 }
 

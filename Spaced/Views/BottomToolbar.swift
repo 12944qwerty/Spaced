@@ -57,6 +57,8 @@ struct HistoryOverlay: View {
 
 struct BottomToolbar: View {
     @Environment(TabCoordinator.self) private var coordinator
+    @Environment(\.dismiss) private var dismiss
+    
     @ObservedObject var tab: Tab
 
     @Binding var popoverBack: Bool
@@ -125,8 +127,7 @@ struct BottomToolbar: View {
 
             Button(action: {
                 tab.getThumbnail {
-                    tab.useThumbnail = true
-                    coordinator.toggleView(show: false)
+                    dismiss()
                 }
             }) {
                 ZStack {
@@ -148,10 +149,14 @@ struct BottomToolbar: View {
 
             Spacer()
         }
-        .padding(.top, 5)
-        .padding(.bottom, UIApplication.shared.safeAreaBottomInset)
+        .padding(.top, 8)
         .overlay(Divider(), alignment: .top)
-        .background(.ultraThinMaterial)
+        .frame(height: 40)
+        .background {
+            Rectangle()
+                .fill(.thinMaterial)
+                .ignoresSafeArea()
+        }
 //        .transition(.move(edge: .bottom))
         .if(popoverBack || popoverForward) {
             $0.contentShape(Rectangle())
@@ -221,7 +226,7 @@ struct BottomToolbar: View {
 
 struct BottomToolbarPreview: View {
     @State var popoverBack = false
-    @State var popoverForward = false
+    @State var popoverForward = true
 
     @ObservedObject var tab = Tab.fake
     
@@ -229,10 +234,19 @@ struct BottomToolbarPreview: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ZStack(alignment: .bottomLeading) {
-                Color.red
-                    .frame(maxHeight: .infinity)
-
+            Color.red
+                .frame(maxHeight: .infinity)
+            
+            BottomToolbar(
+                tab: tab,
+                popoverBack: $popoverBack,
+                popoverForward: $popoverForward,
+            )
+            .environment(coordinator)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay(alignment: .bottomLeading) {
+            Group {
                 if popoverBack {
                     HistoryOverlay(
                         direction: .back,
@@ -242,9 +256,9 @@ struct BottomToolbarPreview: View {
                     ) { item in
                         print("selected")
                     }
-                    .padding(.leading, 25)
+                    .offset(x: 30, y: -43)
                 }
-
+                
                 if popoverForward {
                     HistoryOverlay(
                         direction: .forward,
@@ -254,24 +268,16 @@ struct BottomToolbarPreview: View {
                     ) { item in
                         print("selected")
                     }
-                    .padding(.leading, 25)
+                    .offset(x: 100, y: -43)
                 }
             }
-
-            BottomToolbar(
-                tab: tab,
-                popoverBack: $popoverBack,
-                popoverForward: $popoverForward,
-            )
-            .environment(coordinator)
-        }
+    }
         .onTapGesture {
             withAnimation(.easeOut(duration: 0.15)) {
                 popoverBack = false
                 popoverForward = false
             }
         }
-        .ignoresSafeArea()
     }
 }
 

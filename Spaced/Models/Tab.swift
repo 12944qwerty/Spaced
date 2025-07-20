@@ -40,6 +40,7 @@ class Tab: NSObject, ObservableObject, Identifiable {
         super.init()
         
         self.webView.navigationDelegate = self
+        self.webView.scrollView.delegate = self
         load(url: self.url)
     }
     
@@ -69,7 +70,6 @@ extension Tab: WKNavigationDelegate {
     }
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        getThumbnail()
         if _fake > 0 && _fake < Tab.fakeURLs.count {
             
             self.load(url: Tab.fakeURLs[_fake])
@@ -123,5 +123,15 @@ extension Tab {
         }
         
         return fake
+    }
+}
+
+extension Tab: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        print("scrolling")
+    }
+    
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        print("End decelerating")
     }
 }

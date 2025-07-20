@@ -10,65 +10,93 @@ import SwiftUI
 struct TabGrid: View {
     @Environment(TabCoordinator.self) private var coordinator
     
+    let namespace: Namespace.ID
+    
     var body: some View {
         ScrollView(.vertical) {
-            LazyVGrid(columns: Array(repeating: GridItem(spacing: 20), count: 2), spacing: 30) {
+            LazyVGrid(columns: Array(repeating: GridItem(spacing: 10), count: 2), spacing: 20) {
                 ForEach(coordinator.tabs) { tab in
-                    GridTabView(tab)
-                        .onTapGesture {
-                            coordinator.selectedTab = tab
-                        }
+                    NavigationLink(value: tab) {
+                        TabCardView(tab: tab)
+                            .padding(5)
+                            .background {
+                                if coordinator.prevTab == tab {
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(.cyan, lineWidth: 3)
+                                }
+                            }
+                            .padding(3)
+                            .contentShape(.rect)
+                            .matchedTransitionSource(id: tab.id, in: namespace)
+                            .transition(.scale)
+                            .animation(.snappy(duration: 0.2), value: coordinator.tabs)
+                            //                        .onTapGesture {
+                            //                            coordinator.selectedTab = tab
+                            //                        }
+                    }
                 }
             }
             .padding(30)
         }
-//        .ignoresSafeArea()
-//        .padding(.top, UIApplication.shared.safeAreaTopInset)
+            //        .ignoresSafeArea()
+            //        .padding(.top, UIApplication.shared.safeAreaTopInset)
     }
+}
+
+struct TabCardView: View {
+    @Environment(TabCoordinator.self) private var coordinator
+    @ObservedObject var tab: Tab
     
-    @ViewBuilder
-    func GridTabView(_ tab: Tab) -> some View {
+    var body: some View {
         GeometryReader {
             let size = $0.size
-            
-            Rectangle()
-                .fill(.clear)
-                .anchorPreference(key: HeroKey.self, value: .bounds) { anchor in
-                    return [tab.id + "SOURCE": anchor]
-                }
             
             VStack(spacing: 0) {
                 HStack {
                     Text(tab.title ?? tab.url.host() ?? "")
-                        .padding(5)
+                        .font(.caption)
+                        .foregroundStyle(.primary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical)
+                        .padding(.trailing, 40)
+                        .frame(maxWidth: .infinity)
+                        .overlay(alignment: .trailing) {
+                            Button(action: {
+                                coordinator.close(tab: tab)
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .frame(width: 20, height: 20)
+                                    .padding(.vertical)
+                                    .padding(.trailing, 10)
+                                    .foregroundStyle(.foreground)
+                            }
+                            .frame(height: 40)
+                        }
                 }
                 .frame(width: size.width, height: 40)
                 .background(.thinMaterial)
                 
-                if let thumbnail = tab.thumbnail {
-                    Image(uiImage: thumbnail)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: size.width, height: 160, alignment: .top)
-                        .clipped()
-                        .opacity(coordinator.selectedTab?.id == tab.id ? 0 : 1)
-                } else {
-                    Rectangle()
-                        .fill(.thinMaterial)
-                        .background(.tertiary)
-                        .overlay {
+                Rectangle()
+                    .fill(.thinMaterial)
+                    .overlay {
+                        if let thumbnail = tab.thumbnail {
+                            Image(uiImage: thumbnail)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: size.width, height: 160, alignment: .top)
+                                .clipped()
+                        } else {
                             ProgressView()
                         }
-                        .opacity(coordinator.selectedTab?.id == tab.id ? 0 : 1)
-                }
+                    }
             }
             .frame(width: size.width, height: 200)
         
         }
         .frame(height: 200)
         .contentShape(.rect)
-        .clipShape(.rect(cornerRadius: 20))
         .shadow(radius: 5)
+        .clipShape(.rect(cornerRadius: 20))
     }
 }
 

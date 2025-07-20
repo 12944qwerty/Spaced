@@ -10,42 +10,15 @@ import SwiftUI
 struct Detail: View {
     @Environment(TabCoordinator.self) private var coordinator
     
-    var body: some View {
-        
-        GeometryReader {
-            let size = $0.size
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 0) {
-                    ForEach(coordinator.tabs) { tab in
-                        TabView(tab, size: size)
-                    }
-                }
-                .scrollTargetLayout()
-            }
-            .scrollTargetBehavior(.paging)
-            .scrollPosition(id: .init(get: {
-                return coordinator.detailScrollPosition
-            }, set: {
-                coordinator.detailScrollPosition = $0
-            }))
-            .onChange(of: coordinator.detailScrollPosition) { oldValue, newValue in
-                coordinator.didDetailPageChanged()
-            }
-        }
-        .opacity(coordinator.showDetailView ? 1 : 0)
-        .onAppear {
-            coordinator.toggleView(show: true)
-        }
-    }
+    @ObservedObject var tab: Tab
     
     @State var popoverBack = false
     @State var popoverForward = false
     
-    @ViewBuilder
-    func TabView(_ tab: Tab, size: CGSize) -> some View {
+    var body: some View {
         VStack(spacing: 0) {
             SearchBar(tab: tab)
+                .frame(height: 40)
                 .simultaneousGesture(TapGesture(count: 1).onEnded {
                     withAnimation(.easeOut(duration: 0.15)) {
                         popoverBack = false
@@ -53,43 +26,68 @@ struct Detail: View {
                     }
                 })
             
-            if let thumbnail = tab.thumbnail, !coordinator.showDetailView {
+            if let thumbnail = tab.thumbnail, false {
                 Image(uiImage: thumbnail)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-//                    .frame(width: size.width, height: size.height)
                     .clipped()
+                    .frame(maxHeight: .infinity)
                     .contentShape(.rect)
             } else {
                 WebView(webView: tab.webView)
-//                    .frame(width: size.width, height: size.height)
+                    .frame(maxHeight: .infinity)
                     .clipped()
                     .contentShape(.rect)
             }
             
             BottomToolbar(tab: tab, popoverBack: $popoverBack, popoverForward: $popoverForward)
+                .frame(height: 40)
         }
-        .ignoresSafeArea()
-        .frame(width: size.width, height: size.height)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay(alignment: .bottomLeading) {
+            Group {
+                if popoverBack {
+                    HistoryOverlay(
+                        direction: .back,
+                        items: tab.webView.backForwardList.backList,
+                        back: $popoverBack,
+                        forward: $popoverForward
+                    ) { item in
+                        tab.webView.go(to: item)
+                    }
+                    .offset(x: 30, y: -43)
+                }
+                
+                if popoverForward {
+                    HistoryOverlay(
+                        direction: .forward,
+                        items: tab.webView.backForwardList.forwardList,
+                        back: $popoverBack,
+                        forward: $popoverForward
+                    ) { item in
+                        tab.webView.go(to: item)
+                    }
+                    .offset(x: 100, y: -43)
+                }
+            }
+        }
         .simultaneousGesture(TapGesture(count: 1).onEnded {
             withAnimation(.easeOut(duration: 0.15)) {
                 popoverBack = false
                 popoverForward = false
             }
         })
-        .background {
-            if let selectedTab = coordinator.selectedTab {
-                Rectangle()
-                    .fill(.clear)
-                    .anchorPreference(key: HeroKey.self, value: .bounds) { anchor in
-                        return [ selectedTab.id + "DEST" : anchor ]
-                    }
-            }
+        .onAppear {
+            coordinator.selectedTab = tab
+            coordinator.prevTab = tab
         }
-//        .clipShape(.rect(cornerRadius: 20))
+        .onDisappear {
+            coordinator.selectedTab = nil
+        }
     }
 }
 
 #Preview {
-    ContentView()
+    Detail(tab: Tab.fake)
+        .environment(TabCoordinator.init())
 }

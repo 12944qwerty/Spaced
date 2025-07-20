@@ -119,11 +119,15 @@ struct SearchBar: View {
                     .matchedGeometryEffect(id: "searchbar-text", in: namespace)
             }
         }
-        .padding(.top, UIApplication.shared.safeAreaTopInset)
         .padding(.bottom, 10)
         .padding(.horizontal)
-        .background(.ultraThinMaterial)
+        .background {
+            Rectangle()
+                .fill(.thinMaterial)
+                .ignoresSafeArea()
+        }
         .overlay(Divider(), alignment: .bottom)
+        .frame(height: 40)
     }
 }
 
@@ -135,5 +139,4 @@ struct SearchBar: View {
         )
         Spacer()
     }
-    .ignoresSafeArea()
 }
