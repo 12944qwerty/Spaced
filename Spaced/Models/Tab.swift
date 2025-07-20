@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 import WebKit
 
 class Tab: NSObject, ObservableObject, Identifiable {
@@ -21,6 +22,11 @@ class Tab: NSObject, ObservableObject, Identifiable {
     
     @Published var currentContentMode: WKWebpagePreferences.ContentMode?
     @Published var contentModeToRequestForHost: [String: WKWebpagePreferences.ContentMode] = [:]
+    
+    @Published var currentScrollOffset: CGFloat = 0
+    @Published var previousScrollOffset: CGFloat = 0
+    
+    @Published var progress: CGFloat = 0
     
     var appeared = false
     
@@ -128,10 +134,62 @@ extension Tab {
 
 extension Tab: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        print("scrolling")
+        let contentHeight = scrollView.contentSize.height
+        let scrollViewHeight = scrollView.bounds.height
+        let maxOffsetY = max(0, contentHeight - scrollViewHeight)
+        let offsetY = scrollView.contentOffset.y
+        
+        // Ignore bounce (overscroll)
+        guard offsetY >= 0, offsetY <= maxOffsetY else {
+            return
+        }
+        
+        let offset = max(0, abs(offsetY)) * (offsetY < 0 ? -1 : 1)
+        
+        previousScrollOffset = currentScrollOffset
+        currentScrollOffset = offset
+        
+        let delta = currentScrollOffset - previousScrollOffset
+        
+        progress += delta / 80
+        progress = max(min(progress, 1), 0)
+    }
+    
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        if !decelerate {
+            if progress < 0.4 {
+                withAnimation(.snappy) {
+                    progress = 0
+                }
+            } else {
+                withAnimation(.snappy) {
+                    progress = 1
+                }
+            }
+        }
     }
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        print("End decelerating")
+        if progress < 0.4 {
+            withAnimation(.snappy) {
+                progress = 0
+            }
+        } else {
+            withAnimation(.snappy) {
+                progress = 1
+            }
+        }
     }
+    
+    func scrollViewDidScrollToTop(_ scrollView: UIScrollView) {
+        withAnimation(.snappy) {
+            progress = 0
+        }
+    }
+}
+
+
+#Preview {
+    Detail(tab: Tab.fake)
+        .environment(TabCoordinator.init())
 }

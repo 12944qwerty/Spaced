@@ -15,10 +15,13 @@ struct Detail: View {
     @State var popoverBack = false
     @State var popoverForward = false
     
+    @Namespace private var titlenamespace
+    
     var body: some View {
         VStack(spacing: 0) {
             SearchBar(tab: tab)
-                .frame(height: 40)
+                .frame(height: 40 - tab.progress * 30)
+                //                    .frame(height: 40 - tab.progress * 20)
                 .simultaneousGesture(TapGesture(count: 1).onEnded {
                     withAnimation(.easeOut(duration: 0.15)) {
                         popoverBack = false
@@ -26,21 +29,29 @@ struct Detail: View {
                     }
                 })
             
-            if let thumbnail = tab.thumbnail, false {
-                Image(uiImage: thumbnail)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .clipped()
-                    .frame(maxHeight: .infinity)
-                    .contentShape(.rect)
-            } else {
-                WebView(webView: tab.webView)
-                    .frame(maxHeight: .infinity)
-                    .clipped()
-                    .contentShape(.rect)
+            let footerHeight = UIApplication.shared.safeAreaBottomInset + 40
+            GeometryReader { geo in
+                Group {
+                    if let thumbnail = tab.thumbnail, false {
+                        Image(uiImage: thumbnail)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .clipped()
+                            .contentShape(.rect)
+                    } else {
+                        WebView(webView: tab.webView)
+                            .ignoresSafeArea()
+                            .clipped()
+                            .contentShape(.rect)
+                    }
+                }
+                .offset(y: tab.progress * 10)
+                .frame(height: geo.size.height + tab.progress * footerHeight)
             }
+                //            .frame(height: UIScreen.main.bounds.size.height - combinedHeight + tab.progress * combinedHeight)
             
             BottomToolbar(tab: tab, popoverBack: $popoverBack, popoverForward: $popoverForward)
+                .offset(y: tab.progress * (40 + UIApplication.shared.safeAreaBottomInset))
                 .frame(height: 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -88,6 +99,7 @@ struct Detail: View {
 }
 
 #Preview {
-    Detail(tab: Tab.fake)
+    let tab = Tab.fake
+    Detail(tab: tab)
         .environment(TabCoordinator.init())
 }

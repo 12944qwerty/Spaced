@@ -16,6 +16,10 @@ struct SearchBar: View {
     
     @Namespace var namespace
     
+    var progress: CGFloat {
+        (tab.progress / 0.4) * 0.6
+    }
+    
     var body: some View {
         HStack {
             if searchFocusedState {
@@ -88,6 +92,7 @@ struct SearchBar: View {
                     Spacer()
                     
                     Text(tab.url.host() ?? "")
+                        .font(.system(size: 16 - tab.progress * 2))
                     
                     Spacer()
                     
@@ -95,31 +100,37 @@ struct SearchBar: View {
                         let title = tab.webView.title
                         ShareLink("", item: url, subject: title != nil ? Text(title!) : nil)
                             .frame(width: 30)
+                            .opacity(1 - progress)
                     } else {
                         Color.clear.frame(width: 30)
                     }
                 }
-                    .frame(height: 25)
                     .padding(.vertical, 6)
                     .padding(.horizontal, 10)
                     .frame(maxWidth: .infinity)
-                    .background(.tertiary)
+                    .background(.tertiary.opacity(1 - progress))
                     .clipShape(.capsule)
                     .onTapGesture {
-                        urlEdit = tab.url.absoluteString
-                        
-                        withAnimation(.easeOut(duration: 0.2)) {
-                            searchFocusedState = true
-                        }
-                        searchFocused = true
-                        DispatchQueue.main.async {
-                            UIApplication.shared.sendAction(#selector(UIResponder.selectAll(_:)), to: nil, from: nil, for: nil)
+                        if tab.progress > 0.5 {
+                            withAnimation(.snappy) {
+                                tab.progress = 0
+                            }
+                        } else {
+                            urlEdit = tab.url.absoluteString
+                            
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                searchFocusedState = true
+                            }
+                            searchFocused = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                UIApplication.shared.sendAction(#selector(UIResponder.selectAll(_:)), to: nil, from: nil, for: nil)
+                            }
                         }
                     }
                     .matchedGeometryEffect(id: "searchbar-text", in: namespace)
             }
         }
-        .padding(.bottom, 10)
+        .padding(.bottom, (1 - tab.progress) * 10)
         .padding(.horizontal)
         .background {
             Rectangle()
@@ -127,16 +138,27 @@ struct SearchBar: View {
                 .ignoresSafeArea()
         }
         .overlay(Divider(), alignment: .bottom)
-        .frame(height: 40)
     }
 }
 
+
 #Preview {
+    let tab = Tab.fake
     VStack {
         SearchBar(
-            tab: Tab.fake,
-            searchFocusedState: false
+            tab: tab,
+            searchFocusedState: false,
         )
+        .frame(height: 40 - tab.progress * 30)
         Spacer()
+        Button("Toggle progress") {
+            withAnimation(.smooth(duration: 0.4)) {
+                if tab.progress < 0.5 {
+                    tab.progress = 1
+                } else {
+                    tab.progress = 0
+                }
+            }
+        }
     }
 }

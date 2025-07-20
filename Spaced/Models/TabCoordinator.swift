@@ -20,9 +20,13 @@ class TabCoordinator {
     
     func close(tab: Tab) {
         tabs.removeAll(where: { $0.id == tab.id })
+        
+        if prevTab == tab {
+            prevTab = tabs.last
+        }
     }
     
-    func addTab() -> Tab {
+    @discardableResult func addTab() -> Tab {
         let tab = Tab(initialURL: URL(string: "https://google.com")!)
         
         detailScrollPosition = tab.id
@@ -32,10 +36,22 @@ class TabCoordinator {
         return tab
     }
     
+    @discardableResult func newTab() -> Tab {
+        let tab = addTab()
+        
+        self.path.removeLast()
+        self.path.append(tab)
+        selectedTab = tab
+        prevTab = tab
+        
+        return tab
+    }
+    
     func addDefaultTab() {
         if tabs.count == 0 {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 let tab = self.addTab()
+                self.prevTab = tab
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     self.path.append(tab)

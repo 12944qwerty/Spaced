@@ -115,7 +115,9 @@ struct BottomToolbar: View {
             Spacer()
 
             Button(action: {
-                coordinator.addTab()
+                tab.getThumbnail {
+                    coordinator.newTab()
+                }
 
             }) {
                 Image(systemName: "plus")
@@ -176,7 +178,9 @@ struct BottomToolbar: View {
                     }
 
                     FormButton("New Tab", systemImage: "plus.circle") {
-                        coordinator.addTab()
+                        tab.getThumbnail {
+                            coordinator.newTab()
+                        }
                     }
                 }
 
