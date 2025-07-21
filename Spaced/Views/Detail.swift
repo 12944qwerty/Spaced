@@ -8,12 +8,14 @@
 import SwiftUI
 
 struct Detail: View {
-    @Environment(TabCoordinator.self) private var coordinator
+    @EnvironmentObject private var coordinator: TabCoordinator
     
     @ObservedObject var tab: Tab
     
     @State var popoverBack = false
     @State var popoverForward = false
+    
+    var inactive = false
     
     @Namespace private var titlenamespace
     
@@ -32,12 +34,13 @@ struct Detail: View {
             let footerHeight = UIApplication.shared.safeAreaBottomInset + 40
             GeometryReader { geo in
                 Group {
-                    if let thumbnail = tab.thumbnail, false {
+                    if let thumbnail = tab.thumbnail, coordinator.isDragging || inactive {
                         Image(uiImage: thumbnail)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .clipped()
                             .contentShape(.rect)
+                            .blur(radius: 1)
                     } else {
                         WebView(webView: tab.webView)
                             .ignoresSafeArea()
@@ -88,18 +91,11 @@ struct Detail: View {
                 popoverForward = false
             }
         })
-        .onAppear {
-            coordinator.selectedTab = tab
-            coordinator.prevTab = tab
-        }
-        .onDisappear {
-            coordinator.selectedTab = nil
-        }
     }
 }
 
 #Preview {
     let tab = Tab.fake
     Detail(tab: tab)
-        .environment(TabCoordinator.init())
+        .environmentObject(TabCoordinator.init())
 }

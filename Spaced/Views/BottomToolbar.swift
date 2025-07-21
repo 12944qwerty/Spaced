@@ -56,8 +56,7 @@ struct HistoryOverlay: View {
 
 
 struct BottomToolbar: View {
-    @Environment(TabCoordinator.self) private var coordinator
-    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var coordinator: TabCoordinator
     
     @ObservedObject var tab: Tab
 
@@ -129,7 +128,7 @@ struct BottomToolbar: View {
 
             Button(action: {
                 tab.getThumbnail {
-                    dismiss()
+                    coordinator.path.removeAll()
                 }
             }) {
                 ZStack {
@@ -246,7 +245,7 @@ struct BottomToolbarPreview: View {
                 popoverBack: $popoverBack,
                 popoverForward: $popoverForward,
             )
-            .environment(coordinator)
+            .environmentObject(coordinator)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .overlay(alignment: .bottomLeading) {

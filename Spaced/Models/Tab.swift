@@ -136,6 +136,11 @@ extension Tab: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let contentHeight = scrollView.contentSize.height
         let scrollViewHeight = scrollView.bounds.height
+        
+        if contentHeight - scrollViewHeight < 200 {
+            return // Don't do anything if tab too small
+        }
+        
         let maxOffsetY = max(0, contentHeight - scrollViewHeight)
         let offsetY = scrollView.contentOffset.y
         
@@ -191,5 +196,5 @@ extension Tab: UIScrollViewDelegate {
 
 #Preview {
     Detail(tab: Tab.fake)
-        .environment(TabCoordinator.init())
+        .environmentObject(TabCoordinator.init())
 }

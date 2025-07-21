@@ -7,19 +7,22 @@
 
 import SwiftUI
 
-@Observable
-class TabCoordinator {
-    var tabs: [Tab] = []
+class TabCoordinator: ObservableObject {
+    @Published var tabs: [Tab] = []
     
-    var path = NavigationPath()
+    @Published var path = NavigationPath()
     
-    var selectedTab: Tab?
-    var prevTab: Tab?
+    @Published var selectedTab: Tab?
+    @Published var prevTab: Tab?
     
-    var detailScrollPosition: String?
+    @Published var isDragging = false
+    
+    @Published var detailScrollPosition: String?
     
     func close(tab: Tab) {
-        tabs.removeAll(where: { $0.id == tab.id })
+        withAnimation(.snappy(duration: 0.3)) {
+            tabs.removeAll(where: { $0.id == tab.id })
+        }
         
         if prevTab == tab {
             prevTab = tabs.last
@@ -31,7 +34,9 @@ class TabCoordinator {
         
         detailScrollPosition = tab.id
         
-        tabs.append(tab)
+        withAnimation(.snappy(duration: 0.3)) {
+            tabs.append(tab)
+        }
         
         return tab
     }
@@ -39,7 +44,6 @@ class TabCoordinator {
     @discardableResult func newTab() -> Tab {
         let tab = addTab()
         
-        self.path.removeLast()
         self.path.append(tab)
         selectedTab = tab
         prevTab = tab
@@ -49,7 +53,7 @@ class TabCoordinator {
     
     func addDefaultTab() {
         if tabs.count == 0 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
                 let tab = self.addTab()
                 self.prevTab = tab
                 
@@ -58,6 +62,29 @@ class TabCoordinator {
                 }
             }
         }
+    }
+    
+    func previousTab(_ tab: Tab) -> Tab? {
+        guard let ind = tabs.firstIndex(of: tab) else { return nil }
+        if ind == 0 {
+            return nil
+        }
+        return tabs[ind - 1]
+    }
+    
+    func followingTab(_ tab: Tab) -> Tab? {
+        guard let ind = tabs.firstIndex(of: tab) else { return nil }
+        if ind == tabs.count - 1 {
+            return nil
+        }
+        return tabs[ind + 1]
+    }
+    
+    func changeTab(_ tab: Tab) {
+        self.path.removeLast()
+        self.path.append(tab)
+        prevTab = tab
+        selectedTab = tab
     }
 }
 

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TabGrid: View {
-    @Environment(TabCoordinator.self) private var coordinator
+    @EnvironmentObject private var coordinator: TabCoordinator
     
     let namespace: Namespace.ID
     
@@ -22,19 +22,20 @@ struct TabGrid: View {
                             .background {
                                 if coordinator.prevTab == tab {
                                     RoundedRectangle(cornerRadius: 20)
-                                        .stroke(.cyan, lineWidth: 3)
+                                        .stroke(.blue, lineWidth: 3)
                                 }
                             }
                             .padding(3)
                             .contentShape(.rect)
-                            .matchedTransitionSource(id: tab.id, in: namespace)
-                            .transition(.scale)
-                            .animation(.snappy(duration: 0.2), value: coordinator.tabs)
                             //                        .onTapGesture {
                             //                            coordinator.selectedTab = tab
                             //                        }
                     }
+                    .id(tab.id)
+                    .transition(.scale)
+
                 }
+                .animation(.snappy(duration: 0.2), value: coordinator.tabs)
             }
             .padding(30)
         }
@@ -44,7 +45,7 @@ struct TabGrid: View {
 }
 
 struct TabCardView: View {
-    @Environment(TabCoordinator.self) private var coordinator
+    @EnvironmentObject private var coordinator: TabCoordinator
     @ObservedObject var tab: Tab
     
     var body: some View {

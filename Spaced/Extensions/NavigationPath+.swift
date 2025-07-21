@@ -5,4 +5,11 @@
 //  Created by Krish Shah on 7/20/25.
 //
 
-import Foundation
+import SwiftUI
+
+extension NavigationPath {
+    mutating func removeAll() {
+        self.removeLast(self.count)
+    }
+}
+
